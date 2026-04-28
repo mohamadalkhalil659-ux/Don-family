@@ -1,19 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Paste Site</title>
+<meta charset="UTF-8">
+<title>Don Paste</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  margin: 0;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 20px;
+}
+
+textarea {
+  width: 100%;
+  height: 200px;
+  border-radius: 10px;
+  border: none;
+  padding: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background: #22c55e;
+  border: none;
+  color: white;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.box {
+  background: #1e293b;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 10px;
+}
+</style>
+
 </head>
-<body style="text-align:center;font-family:Arial">
 
-<h2>📄 موقعك</h2>
+<body>
 
-<div>🔥 مكان إعلان هنا</div>
+<div class="container">
 
-<textarea id="text" style="width:80%;height:150px;"></textarea><br><br>
+<h1>🚀 Don Paste</h1>
 
+<div class="box">
+مكان إعلان (AdSense لاحقًا)
+</div>
+
+<textarea id="text" placeholder="اكتب النص هنا..."></textarea>
+<br>
 <button onclick="save()">إنشاء رابط</button>
 
 <div id="result"></div>
+
+</div>
 
 <script>
 function save(){
@@ -22,7 +72,7 @@ function save(){
  localStorage.setItem(id,t);
  let link=location.href+"#"+id;
  document.getElementById("result").innerHTML=
- "<br>رابطك:<br><a href='"+link+"'>"+link+"</a>";
+ "<div class='box'>رابطك:<br><a href='"+link+"' style='color:#22c55e'>"+link+"</a></div>";
 }
 
 window.onload=function(){
@@ -30,7 +80,7 @@ window.onload=function(){
  if(id){
   let data=localStorage.getItem(id);
   if(data){
-   document.body.innerHTML="<pre>"+data+"</pre>";
+   document.body.innerHTML="<div class='container'><pre>"+data+"</pre></div>";
   }
  }
 }
