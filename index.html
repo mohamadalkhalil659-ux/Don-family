@@ -45,6 +45,10 @@ button {
 }
 </style>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
 </head>
 
 <body>
@@ -66,22 +70,50 @@ button {
 </div>
 
 <script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
+  authDomain: "don-paste-189e9.firebaseapp.com",
+  projectId: "don-paste-189e9",
+  storageBucket: "don-paste-189e9.appspot.com",
+  messagingSenderId: "177445092040",
+  appId: "1:177445092040:web:fa22e602fee9fdfd4103fd"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+
+// حفظ النص
 function save(){
- let t=document.getElementById("text").value;
- let id=Date.now();
- localStorage.setItem(id,t);
- let link=location.href+"#"+id;
- document.getElementById("result").innerHTML=
- "<div class='box'>رابطك:<br><a href='"+link+"' style='color:#22c55e'>"+link+"</a></div>";
+ let t = document.getElementById("text").value;
+
+ db.collection("pastes").add({
+  content: t,
+  date: new Date().toString()
+ }).then((docRef) => {
+
+  let link = location.href + "#" + docRef.id;
+
+  document.getElementById("result").innerHTML =
+  "<div class='box'>رابطك:<br><a href='" + link + "' style='color:#22c55e'>" + link + "</a></div>";
+
+ });
 }
 
-window.onload=function(){
- let id=location.hash.replace("#","");
+
+// عرض النص عند فتح الرابط
+window.onload = function(){
+ let id = location.hash.replace("#","");
+
  if(id){
-  let data=localStorage.getItem(id);
-  if(data){
-   document.body.innerHTML="<div class='container'><pre>"+data+"</pre></div>";
-  }
+  db.collection("pastes").doc(id).get().then((doc)=>{
+   if(doc.exists){
+    document.body.innerHTML =
+    "<div class='container'><pre>"+doc.data().content+"</pre></div>";
+   }
+  });
  }
 }
 </script>
