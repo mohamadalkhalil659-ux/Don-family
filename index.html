@@ -45,10 +45,10 @@ button {
 }
 </style>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<!-- 🔥 Firebase v8 (مهم لتسجيل الدخول) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 </head>
 
@@ -62,7 +62,7 @@ button {
 مكان إعلان (AdSense لاحقًا)
 </div>
 
-<!-- زر تسجيل الدخول -->
+<!-- تسجيل الدخول -->
 <button onclick="login()">تسجيل الدخول Google</button>
 <p id="user"></p>
 
@@ -90,20 +90,24 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// تسجيل الدخول
+// 🔐 تسجيل الدخول
 function login(){
   let provider = new firebase.auth.GoogleAuthProvider();
 
   firebase.auth().signInWithPopup(provider)
   .then((result)=>{
     let user = result.user;
+
     document.getElementById("user").innerText =
     "👤 مرحبًا: " + user.email;
+  })
+  .catch((error)=>{
+    alert(error.message);
   });
 }
 
 
-// معرفة المستخدم تلقائيًا
+// 👤 معرفة المستخدم تلقائيًا
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
@@ -112,7 +116,7 @@ firebase.auth().onAuthStateChanged((user)=>{
 });
 
 
-// حفظ النص
+// 💾 حفظ النص
 function save(){
  let t = document.getElementById("text").value;
 
@@ -130,7 +134,7 @@ function save(){
 }
 
 
-// عرض النص عند فتح الرابط
+// 📄 عرض النص
 window.onload = function(){
  let id = location.hash.replace("#","");
 
