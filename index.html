@@ -48,6 +48,7 @@ button {
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
 
 </head>
 
@@ -60,6 +61,10 @@ button {
 <div class="box">
 مكان إعلان (AdSense لاحقًا)
 </div>
+
+<!-- زر تسجيل الدخول -->
+<button onclick="login()">تسجيل الدخول Google</button>
+<p id="user"></p>
 
 <textarea id="text" placeholder="اكتب النص هنا..."></textarea>
 <br>
@@ -83,6 +88,28 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+
+
+// تسجيل الدخول
+function login(){
+  let provider = new firebase.auth.GoogleAuthProvider();
+
+  firebase.auth().signInWithPopup(provider)
+  .then((result)=>{
+    let user = result.user;
+    document.getElementById("user").innerText =
+    "👤 مرحبًا: " + user.email;
+  });
+}
+
+
+// معرفة المستخدم تلقائيًا
+firebase.auth().onAuthStateChanged((user)=>{
+  if(user){
+    document.getElementById("user").innerText =
+    "👤 مرحبًا: " + user.email;
+  }
+});
 
 
 // حفظ النص
