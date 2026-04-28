@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Paste Site</title>
+</head>
+<body style="text-align:center;font-family:Arial">
+
+<h2>📄 موقعك</h2>
+
+<div>🔥 مكان إعلان هنا</div>
+
+<textarea id="text" style="width:80%;height:150px;"></textarea><br><br>
+
+<button onclick="save()">إنشاء رابط</button>
+
+<div id="result"></div>
+
+<script>
+function save(){
+ let t=document.getElementById("text").value;
+ let id=Date.now();
+ localStorage.setItem(id,t);
+ let link=location.href+"#"+id;
+ document.getElementById("result").innerHTML=
+ "<br>رابطك:<br><a href='"+link+"'>"+link+"</a>";
+}
+
+window.onload=function(){
+ let id=location.hash.replace("#","");
+ if(id){
+  let data=localStorage.getItem(id);
+  if(data){
+   document.body.innerHTML="<pre>"+data+"</pre>";
+  }
+ }
+}
+</script>
+
+</body>
+</html>
