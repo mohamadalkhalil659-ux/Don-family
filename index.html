@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Global Paste SaaS</title>
+<title>Global SaaS Paste</title>
 
 <style>
 body{
@@ -13,19 +13,9 @@ body{
   text-align:center;
 }
 
-.container{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-}
+.container{max-width:900px;margin:auto;padding:20px}
 
-textarea{
-  width:100%;
-  height:140px;
-  border:none;
-  border-radius:10px;
-  padding:10px;
-}
+textarea{width:100%;height:140px;border:none;border-radius:10px;padding:10px}
 
 button{
   padding:10px 14px;
@@ -45,7 +35,15 @@ button{
   text-align:left;
 }
 
+.ad{
+  background:#111827;
+  padding:10px;
+  margin:10px 0;
+  border:1px dashed #444;
+}
+
 a{color:#22c55e}
+
 .top{
   background:#0f172a;
   padding:10px;
@@ -61,18 +59,27 @@ a{color:#22c55e}
 <body>
 
 <div class="top">
-<h2>🚀 Global Paste SaaS</h2>
+<h2>🚀 Global SaaS Paste</h2>
+
 <button onclick="login()">Login</button>
-<button onclick="myPastes()">My Pastes</button>
 <button onclick="home()">Home</button>
+<button onclick="dashboard()">Dashboard</button>
+<button onclick="admin()">Admin</button>
+
 <p id="user"></p>
 </div>
 
-<div class="container">
+<div class="container" id="app">
 
-<textarea id="text" placeholder="اكتب نصك..."></textarea><br>
+<!-- 🔥 Ad 1 -->
+<div class="ad">Ad Space 1</div>
 
-<button onclick="save()">Create Link</button>
+<textarea id="text"></textarea>
+
+<!-- 🔥 Ad 2 -->
+<div class="ad">Ad Space 2</div>
+
+<button onclick="create()">Create Paste</button>
 
 <div id="result"></div>
 
@@ -80,38 +87,44 @@ a{color:#22c55e}
 
 <script>
 
-// 🔥 Firebase Config
+// 🔥 Firebase
 const firebaseConfig = {
- apiKey: "AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
- authDomain: "don-paste-189e9.firebaseapp.com",
- projectId: "don-paste-189e9",
- storageBucket: "don-paste-189e9.appspot.com",
- messagingSenderId: "177445092040",
- appId: "1:177445092040:web:fa22e602fee9fdfd4103fd"
+ apiKey:"AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
+ authDomain:"don-paste-189e9.firebaseapp.com",
+ projectId:"don-paste-189e9",
+ storageBucket:"don-paste-189e9.appspot.com",
+ messagingSenderId:"177445092040",
+ appId:"1:177445092040:web:fa22e602fee9fdfd4103fd"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
-function slug(){
- return Math.random().toString(36).substring(2,8);
-}
+let ADMIN_UID="CHANGE_THIS";
 
 // 🔐 login
 function login(){
- let provider=new firebase.auth.GoogleAuthProvider();
- firebase.auth().signInWithPopup(provider);
+ let p=new firebase.auth.GoogleAuthProvider();
+ firebase.auth().signInWithPopup(p);
 }
 
 // 👤 user
 firebase.auth().onAuthStateChanged(u=>{
- if(u){
-  document.getElementById("user").innerText=u.email;
- }
+ if(u) document.getElementById("user").innerText=u.email;
 });
 
-// 💾 save paste
-function save(){
+// slug
+function slug(){
+ return Math.random().toString(36).substring(2,8);
+}
+
+// 🏠 home
+function home(){
+ location.reload();
+}
+
+// 💾 create paste
+function create(){
  let u=firebase.auth().currentUser;
  if(!u) return alert("Login first");
 
@@ -126,46 +139,72 @@ function save(){
   created:Date.now()
  });
 
- let link=location.origin+"/p.html?slug="+id;
+ let link=location.origin+"?p="+id;
 
  document.getElementById("result").innerHTML=
- `<div class="box">
- 🔗 Link:<br>
- <a href="${link}">${link}</a>
- </div>`;
+ `<div class="box">🔗 <a href="${link}">${link}</a></div>`;
 }
 
-// 📁 my pastes
-function myPastes(){
+// 📊 dashboard
+function dashboard(){
  let u=firebase.auth().currentUser;
  if(!u) return;
 
  db.collection("pastes").where("userId","==",u.uid).get()
  .then(s=>{
-  let html="<div class='container'><h2>My Pastes</h2>";
+  let html="<div class='container'><h2>Dashboard</h2>";
 
   s.forEach(d=>{
-   html+=`<div class='box'>
+   html+=`
+   <div class="box">
     ${d.data().content}
+    <br>👁 ${d.data().views}
    </div>`;
   });
 
-  document.body.innerHTML=html+"</div>";
+  document.getElementById("app").innerHTML=html+"</div>";
  });
 }
 
-// 🏠 home
-function home(){
- location.reload();
+// 🛠 admin panel
+function admin(){
+ let u=firebase.auth().currentUser;
+ if(!u) return;
+
+ if(u.uid!==ADMIN_UID){
+  alert("No access");
+  return;
+ }
+
+ db.collection("pastes").get().then(s=>{
+  let html="<div class='container'><h2>Admin Panel</h2>";
+
+  s.forEach(d=>{
+   html+=`
+   <div class="box">
+    ${d.data().content}
+    <br>
+    <button onclick="del('${d.id}')">Delete</button>
+   </div>`;
+  });
+
+  document.getElementById("app").innerHTML=html+"</div>";
+ });
+}
+
+// delete
+function del(id){
+ db.collection("pastes").doc(id).delete();
+ alert("Deleted");
 }
 
 // 🔗 open paste + views
 window.onload=function(){
 
- let slug=new URLSearchParams(location.search).get("slug");
+ let p=new URLSearchParams(location.search).get("p");
 
- if(slug){
-  let ref=db.collection("pastes").doc(slug);
+ if(p){
+  let ref=db.collection("pastes").doc(p);
 
   ref.get().then(doc=>{
    if(doc.exists){
@@ -178,11 +217,18 @@ window.onload=function(){
 
     document.body.innerHTML=`
     <div class="container">
+
+      <div class="ad">Ad Top</div>
+
       <pre>${doc.data().content}</pre>
+
+      <div class="ad">Ad Bottom</div>
+
       <div class="box">
-        👁 Views: ${doc.data().views || 0}<br>
+        👁 Views: ${doc.data().views}<br>
         💰 Earnings: $${e.toFixed(3)}
       </div>
+
     </div>`;
    }
   });
