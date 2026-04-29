@@ -45,6 +45,7 @@ button {
 }
 </style>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -57,9 +58,7 @@ button {
 
 <h1>🚀 Don Paste</h1>
 
-<div class="box">
-مكان إعلان (AdSense لاحقًا)
-</div>
+<div class="box">مكان إعلان</div>
 
 <button onclick="login()">تسجيل الدخول Google</button>
 <p id="user"></p>
@@ -87,23 +86,27 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// 🔐 تسجيل الدخول (FIXED)
+// 🔐 تسجيل الدخول (الحل الصحيح بدون popup)
 function login(){
   var provider = new firebase.auth.GoogleAuthProvider();
-
-  firebase.auth().signInWithPopup(provider)
-  .then((result)=>{
-    let user = result.user;
-    document.getElementById("user").innerText =
-    "👤 مرحبًا: " + user.email;
-  })
-  .catch((error)=>{
-    alert(error.message);
-  });
+  firebase.auth().signInWithRedirect(provider);
 }
 
 
-// 👤 الحالة
+// 👤 بعد الرجوع من Google
+firebase.auth().getRedirectResult()
+.then((result)=>{
+  if(result && result.user){
+    document.getElementById("user").innerText =
+    "👤 مرحبًا: " + result.user.email;
+  }
+})
+.catch((error)=>{
+  console.log(error.message);
+});
+
+
+// 👤 عرض المستخدم دائمًا
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
