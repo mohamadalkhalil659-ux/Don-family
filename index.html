@@ -2,53 +2,60 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Pro SaaS App</title>
+<title>Global SaaS Paste</title>
 
 <style>
 body{
-  margin:0;
-  font-family:Arial;
-  background:#0a0f1c;
-  color:white;
+ margin:0;
+ font-family:Arial;
+ background:#0a0f1c;
+ color:white;
 }
 
 nav{
-  background:#111827;
-  padding:10px;
-  display:flex;
-  justify-content:space-between;
+ background:#111827;
+ padding:10px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
 }
 
-.container{max-width:900px;margin:auto;padding:20px}
+.container{
+ max-width:900px;
+ margin:auto;
+ padding:20px;
+}
 
-input,textarea{
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
-  border:none;
+textarea,input{
+ width:100%;
+ padding:10px;
+ margin:5px 0;
+ border-radius:8px;
+ border:none;
 }
 
 button{
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:#22c55e;
-  color:white;
+ padding:10px 12px;
+ margin:5px;
+ border:none;
+ border-radius:8px;
+ background:#22c55e;
+ color:white;
+ cursor:pointer;
 }
 
 .card{
-  background:#1e293b;
-  padding:15px;
-  margin:10px 0;
-  border-radius:10px;
+ background:#1e293b;
+ padding:15px;
+ margin:10px 0;
+ border-radius:10px;
 }
 
 .ad{
-  border:1px dashed #444;
-  padding:10px;
-  margin:10px 0;
+ background:#111827;
+ padding:10px;
+ margin:10px 0;
+ border:1px dashed #444;
 }
 </style>
 
@@ -61,18 +68,19 @@ button{
 <body>
 
 <nav>
-<div>🚀 Pro SaaS</div>
+<div>🌍 Global SaaS Paste</div>
+
 <div>
-<button onclick="login()">Login</button>
+<button onclick="loginGoogle()">Google</button>
 <button onclick="logout()">Logout</button>
 </div>
 </nav>
 
 <div class="container">
 
-<h2>Dashboard</h2>
+<h2>🔥 Create Paste</h2>
 
-<div class="ad">AdSense Slot 1</div>
+<div class="ad">Ad Slot 1</div>
 
 <input id="email" placeholder="Email">
 <input id="pass" type="password" placeholder="Password">
@@ -80,10 +88,13 @@ button{
 <button onclick="signup()">Sign Up</button>
 <button onclick="signin()">Sign In</button>
 
-<div class="ad">AdSense Slot 2</div>
+<div class="ad">Ad Slot 2</div>
 
 <textarea id="text"></textarea>
-<button onclick="save()">Save API Data</button>
+
+<button onclick="save()">Create Link</button>
+<button onclick="dashboard()">Dashboard</button>
+<button onclick="admin()">Admin</button>
 
 <div id="out"></div>
 
@@ -101,23 +112,24 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 
-// 👤 AUTH EMAIL/PASS
+let ADMIN_UID="CHANGE_THIS";
+
+// 🔐 Email Auth
 function signup(){
  firebase.auth().createUserWithEmailAndPassword(
- document.getElementById("email").value,
- document.getElementById("pass").value
+ email.value,pass.value
  );
 }
 
 function signin(){
  firebase.auth().signInWithEmailAndPassword(
- document.getElementById("email").value,
- document.getElementById("pass").value
+ email.value,pass.value
  );
 }
 
-function login(){
- alert("Use email/password");
+function loginGoogle(){
+ let p=new firebase.auth.GoogleAuthProvider();
+ firebase.auth().signInWithPopup(p);
 }
 
 function logout(){
@@ -127,24 +139,111 @@ function logout(){
 // 👤 user state
 firebase.auth().onAuthStateChanged(u=>{
  if(u){
-  document.getElementById("out").innerHTML=
-  "Welcome: "+u.email;
+  out.innerHTML="Welcome "+u.email;
  }
 });
 
-// 💾 API SAVE
+// 🔑 slug
+function slug(){
+ return Math.random().toString(36).substring(2,8);
+}
+
+// 💾 SAVE
 function save(){
  let u=firebase.auth().currentUser;
  if(!u) return alert("Login first");
 
- db.collection("data").add({
-  text:document.getElementById("text").value,
+ let id=slug();
+
+ db.collection("pastes").doc(id).set({
+  content:text.value,
   uid:u.uid,
   email:u.email,
-  time:Date.now()
+  views:0,
+  created:Date.now()
  });
 
- alert("Saved to API (Firestore)");
+ out.innerHTML="Link: ?p="+id;
+}
+
+// 📊 DASHBOARD
+function dashboard(){
+ let u=firebase.auth().currentUser;
+ if(!u) return;
+
+ db.collection("pastes").where("uid","==",u.uid)
+ .get().then(s=>{
+  let html="<h2>Dashboard</h2>";
+
+  s.forEach(d=>{
+   html+=`<div class='card'>
+   ${d.data().content}
+   <br>👁 ${d.data().views}
+   </div>`;
+  });
+
+  document.body.innerHTML=html;
+ });
+}
+
+// 🛠 ADMIN
+function admin(){
+ let u=firebase.auth().currentUser;
+ if(!u) return;
+
+ if(u.uid!==ADMIN_UID){
+  alert("No access");
+  return;
+ }
+
+ db.collection("pastes").get().then(s=>{
+  let html="<h2>Admin Panel</h2>";
+
+  s.forEach(d=>{
+   html+=`<div class='card'>
+   ${d.data().content}
+   </div>`;
+  });
+
+  document.body.innerHTML=html;
+ });
+}
+
+// 🌍 OPEN PASTE
+window.onload=function(){
+
+ let p=new URLSearchParams(location.search).get("p");
+
+ if(p){
+  let ref=db.collection("pastes").doc(p);
+
+  ref.get().then(d=>{
+   if(d.exists){
+
+    ref.update({
+     views:(d.data().views||0)+1
+    });
+
+    let earn=(d.data().views||0)*0.002;
+
+    document.body.innerHTML=`
+    <div class='container'>
+
+    <div class='ad'>Top Ad</div>
+
+    <pre>${d.data().content}</pre>
+
+    <div class='ad'>Bottom Ad</div>
+
+    <div class='card'>
+     👁 Views: ${d.data().views}<br>
+     💰 Earnings: $${earn.toFixed(3)}
+    </div>
+
+    </div>`;
+   }
+  });
+ }
 }
 
 </script>
