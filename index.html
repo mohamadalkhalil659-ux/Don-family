@@ -45,7 +45,7 @@ button {
 }
 </style>
 
-<!-- 🔥 Firebase v8 (مهم لتسجيل الدخول) -->
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -90,21 +90,24 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// 🔐 تسجيل الدخول
+// 🔐 تسجيل الدخول (Redirect بدل Popup)
 function login(){
-  let provider = new firebase.auth.GoogleAuthProvider();
-
-  firebase.auth().signInWithPopup(provider)
-  .then((result)=>{
-    let user = result.user;
-
-    document.getElementById("user").innerText =
-    "👤 مرحبًا: " + user.email;
-  })
-  .catch((error)=>{
-    alert(error.message);
-  });
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithRedirect(provider);
 }
+
+
+// 🔄 بعد الرجوع من Google
+firebase.auth().getRedirectResult()
+.then(function(result){
+  if(result.user){
+    document.getElementById("user").innerText =
+    "👤 مرحبًا: " + result.user.email;
+  }
+})
+.catch(function(error){
+  console.log(error);
+});
 
 
 // 👤 معرفة المستخدم تلقائيًا
