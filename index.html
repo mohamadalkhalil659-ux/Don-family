@@ -2,248 +2,141 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Global SaaS Paste</title>
+<title>Global SaaS</title>
 
 <style>
 body{
- margin:0;
- font-family:Arial;
- background:#0a0f1c;
- color:white;
+  margin:0;
+  font-family:Arial;
+  background:#0a0f1c;
+  color:white;
 }
 
+/* 🔝 Navbar */
 nav{
- background:#111827;
- padding:10px;
- display:flex;
- justify-content:space-between;
- align-items:center;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px;
+  background:#111827;
+  position:relative;
 }
 
-.container{
- max-width:900px;
- margin:auto;
- padding:20px;
+.logo{
+  font-size:18px;
+  font-weight:bold;
 }
 
-textarea,input{
- width:100%;
- padding:10px;
- margin:5px 0;
- border-radius:8px;
- border:none;
+/* ☰ menu button */
+.menu-btn{
+  font-size:26px;
+  cursor:pointer;
 }
 
-button{
- padding:10px 12px;
- margin:5px;
- border:none;
- border-radius:8px;
- background:#22c55e;
- color:white;
- cursor:pointer;
+/* 📋 menu box */
+.menu{
+  position:absolute;
+  top:60px;
+  right:10px;
+  background:#1e293b;
+  width:220px;
+  border-radius:10px;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
 }
 
-.card{
- background:#1e293b;
- padding:15px;
- margin:10px 0;
- border-radius:10px;
+.menu button{
+  padding:12px;
+  border:none;
+  background:none;
+  color:white;
+  text-align:left;
+  cursor:pointer;
 }
 
-.ad{
- background:#111827;
- padding:10px;
- margin:10px 0;
- border:1px dashed #444;
+.menu button:hover{
+  background:#334155;
+}
+
+/* 🎯 center hero */
+.hero{
+  height:80vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  text-align:center;
+}
+
+.hero h1{
+  font-size:40px;
+  margin:0;
+}
+
+.hero p{
+  color:#94a3b8;
 }
 </style>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 </head>
 
 <body>
 
+<!-- 🔝 NAV -->
 <nav>
-<div>🌍 Global SaaS Paste</div>
+  <div class="logo">🚀 Global SaaS</div>
 
-<div>
-<button onclick="loginGoogle()">Google</button>
-<button onclick="logout()">Logout</button>
-</div>
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+
+  <div class="menu" id="menu">
+
+    <button onclick="home()">🏠 بيت</button>
+    <button onclick="pricing()">💰 أسعار الناشر (CPM)</button>
+    <button onclick="payments()">💳 إثباتات الدفع</button>
+    <button onclick="login()">🔐 تسجيل دخول</button>
+    <button onclick="signup()">➕ إنشاء حساب</button>
+
+  </div>
 </nav>
 
-<div class="container">
-
-<h2>🔥 Create Paste</h2>
-
-<div class="ad">Ad Slot 1</div>
-
-<input id="email" placeholder="Email">
-<input id="pass" type="password" placeholder="Password">
-
-<button onclick="signup()">Sign Up</button>
-<button onclick="signin()">Sign In</button>
-
-<div class="ad">Ad Slot 2</div>
-
-<textarea id="text"></textarea>
-
-<button onclick="save()">Create Link</button>
-<button onclick="dashboard()">Dashboard</button>
-<button onclick="admin()">Admin</button>
-
-<div id="out"></div>
-
+<!-- 🎯 CENTER -->
+<div class="hero">
+  <h1>أهلاً بك في الموقع</h1>
+  <p>نظام نشر وربح احترافي عالمي</p>
 </div>
 
 <script>
 
-// 🔥 Firebase Config
-const firebaseConfig = {
- apiKey:"AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
- authDomain:"don-paste-189e9.firebaseapp.com",
- projectId:"don-paste-189e9"
-};
+// ☰ open/close menu
+function toggleMenu(){
+  let m=document.getElementById("menu");
+  m.style.display = (m.style.display==="flex") ? "none" : "flex";
+}
 
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
+// 🏠 home
+function home(){
+ location.reload();
+}
 
-let ADMIN_UID="CHANGE_THIS";
+// 💰 pricing
+function pricing(){
+ alert("CPM: 1$ - 5$ لكل 1000 مشاهدة (حسب الدولة)");
+}
 
-// 🔐 Email Auth
+// 💳 payments
+function payments(){
+ alert("إثباتات الدفع سيتم إضافتها لاحقاً");
+}
+
+// 🔐 login
+function login(){
+ alert("صفحة تسجيل الدخول");
+}
+
+// ➕ signup
 function signup(){
- firebase.auth().createUserWithEmailAndPassword(
- email.value,pass.value
- );
-}
-
-function signin(){
- firebase.auth().signInWithEmailAndPassword(
- email.value,pass.value
- );
-}
-
-function loginGoogle(){
- let p=new firebase.auth.GoogleAuthProvider();
- firebase.auth().signInWithPopup(p);
-}
-
-function logout(){
- firebase.auth().signOut();
-}
-
-// 👤 user state
-firebase.auth().onAuthStateChanged(u=>{
- if(u){
-  out.innerHTML="Welcome "+u.email;
- }
-});
-
-// 🔑 slug
-function slug(){
- return Math.random().toString(36).substring(2,8);
-}
-
-// 💾 SAVE
-function save(){
- let u=firebase.auth().currentUser;
- if(!u) return alert("Login first");
-
- let id=slug();
-
- db.collection("pastes").doc(id).set({
-  content:text.value,
-  uid:u.uid,
-  email:u.email,
-  views:0,
-  created:Date.now()
- });
-
- out.innerHTML="Link: ?p="+id;
-}
-
-// 📊 DASHBOARD
-function dashboard(){
- let u=firebase.auth().currentUser;
- if(!u) return;
-
- db.collection("pastes").where("uid","==",u.uid)
- .get().then(s=>{
-  let html="<h2>Dashboard</h2>";
-
-  s.forEach(d=>{
-   html+=`<div class='card'>
-   ${d.data().content}
-   <br>👁 ${d.data().views}
-   </div>`;
-  });
-
-  document.body.innerHTML=html;
- });
-}
-
-// 🛠 ADMIN
-function admin(){
- let u=firebase.auth().currentUser;
- if(!u) return;
-
- if(u.uid!==ADMIN_UID){
-  alert("No access");
-  return;
- }
-
- db.collection("pastes").get().then(s=>{
-  let html="<h2>Admin Panel</h2>";
-
-  s.forEach(d=>{
-   html+=`<div class='card'>
-   ${d.data().content}
-   </div>`;
-  });
-
-  document.body.innerHTML=html;
- });
-}
-
-// 🌍 OPEN PASTE
-window.onload=function(){
-
- let p=new URLSearchParams(location.search).get("p");
-
- if(p){
-  let ref=db.collection("pastes").doc(p);
-
-  ref.get().then(d=>{
-   if(d.exists){
-
-    ref.update({
-     views:(d.data().views||0)+1
-    });
-
-    let earn=(d.data().views||0)*0.002;
-
-    document.body.innerHTML=`
-    <div class='container'>
-
-    <div class='ad'>Top Ad</div>
-
-    <pre>${d.data().content}</pre>
-
-    <div class='ad'>Bottom Ad</div>
-
-    <div class='card'>
-     👁 Views: ${d.data().views}<br>
-     💰 Earnings: $${earn.toFixed(3)}
-    </div>
-
-    </div>`;
-   }
-  });
- }
+ alert("صفحة إنشاء حساب");
 }
 
 </script>
