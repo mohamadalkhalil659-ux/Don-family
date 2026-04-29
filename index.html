@@ -45,7 +45,7 @@ button {
 }
 </style>
 
-<!-- Firebase (ترتيب صحيح) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -86,18 +86,33 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// ✅ تسجيل الدخول (بدون popup = لا أخطاء)
+// 🔐 تسجيل الدخول
 function login(){
   var provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithRedirect(provider);
 }
 
 
-// ✅ عرض المستخدم بعد الرجوع
+// 🔄 مهم جدًا: التقاط نتيجة الرجوع
+firebase.auth().getRedirectResult()
+.then(function(result){
+  if(result && result.user){
+    document.getElementById("user").innerText =
+      "👤 مرحبًا: " + result.user.email;
+  }
+})
+.catch(function(error){
+  console.log("Login error:", error.message);
+});
+
+
+// 👤 عرض المستخدم دائمًا
 firebase.auth().onAuthStateChanged(function(user){
   if(user){
     document.getElementById("user").innerText =
       "👤 مرحبًا: " + user.email;
+  } else {
+    document.getElementById("user").innerText = "";
   }
 });
 
