@@ -12,7 +12,7 @@ body{
   color:white;
 }
 
-/* 🔝 Navbar */
+/* NAV */
 nav{
   display:flex;
   justify-content:space-between;
@@ -23,27 +23,23 @@ nav{
 }
 
 .logo{
-  font-size:18px;
   font-weight:bold;
 }
 
-/* ☰ menu button */
 .menu-btn{
   font-size:26px;
   cursor:pointer;
 }
 
-/* 📋 menu box */
 .menu{
   position:absolute;
   top:60px;
   right:10px;
   background:#1e293b;
-  width:220px;
+  width:240px;
   border-radius:10px;
   display:none;
   flex-direction:column;
-  overflow:hidden;
 }
 
 .menu button{
@@ -59,23 +55,21 @@ nav{
   background:#334155;
 }
 
-/* 🎯 center hero */
-.hero{
-  height:80vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
+/* SECTIONS */
+.section{
+  display:none;
+  padding:30px;
   text-align:center;
 }
 
-.hero h1{
-  font-size:40px;
-  margin:0;
+.active{
+  display:block;
 }
 
-.hero p{
-  color:#94a3b8;
+/* HERO */
+.hero{
+  padding:60px 20px;
+  text-align:center;
 }
 </style>
 
@@ -83,60 +77,89 @@ nav{
 
 <body>
 
-<!-- 🔝 NAV -->
 <nav>
   <div class="logo">🚀 Global SaaS</div>
-
   <div class="menu-btn" onclick="toggleMenu()">☰</div>
 
   <div class="menu" id="menu">
 
-    <button onclick="home()">🏠 بيت</button>
-    <button onclick="pricing()">💰 أسعار الناشر (CPM)</button>
-    <button onclick="payments()">💳 إثباتات الدفع</button>
-    <button onclick="login()">🔐 تسجيل دخول</button>
-    <button onclick="signup()">➕ إنشاء حساب</button>
+    <button onclick="show('home')">🏠 بيت</button>
+    <button onclick="show('pricing')">💰 أسعار الناشر (CPM)</button>
+    <button onclick="show('payments')">💳 إثباتات الدفع</button>
+    <button onclick="show('login')">🔐 تسجيل دخول</button>
+    <button onclick="show('signup')">➕ إنشاء حساب</button>
 
   </div>
 </nav>
 
-<!-- 🎯 CENTER -->
-<div class="hero">
-  <h1>أهلاً بك في الموقع</h1>
-  <p>نظام نشر وربح احترافي عالمي</p>
+<!-- 🏠 HOME -->
+<div id="home" class="section active hero">
+  <h1>أهلاً بك 👋</h1>
+  <p>منصة نشر وربح احترافية</p>
+</div>
+
+<!-- 💰 CPM -->
+<div id="pricing" class="section">
+  <h2>💰 أسعار الناشر (CPM)</h2>
+
+  <p>الدول العربية: 0.5$ - 2$ لكل 1000 مشاهدة</p>
+  <p>أوروبا: 2$ - 6$ لكل 1000 مشاهدة</p>
+  <p>أمريكا: 5$ - 12$ لكل 1000 مشاهدة</p>
+</div>
+
+<!-- 💳 PAYMENTS -->
+<div id="payments" class="section">
+  <h2>💳 إثباتات الدفع</h2>
+
+  <p>📌 سيتم عرض إثباتات الدفع قريباً</p>
+  <p>💡 PayPal / Payoneer / Crypto</p>
+</div>
+
+<!-- 🔐 LOGIN -->
+<div id="login" class="section">
+  <h2>🔐 تسجيل الدخول</h2>
+
+  <input placeholder="Email" style="padding:10px;width:80%">
+  <br><br>
+  <input type="password" placeholder="Password" style="padding:10px;width:80%">
+  <br><br>
+
+  <button style="padding:10px 20px;background:#22c55e;color:white;border:none">
+    دخول
+  </button>
+</div>
+
+<!-- ➕ SIGNUP -->
+<div id="signup" class="section">
+  <h2>➕ إنشاء حساب</h2>
+
+  <input placeholder="Email" style="padding:10px;width:80%">
+  <br><br>
+  <input type="password" placeholder="Password" style="padding:10px;width:80%">
+  <br><br>
+
+  <button style="padding:10px 20px;background:#22c55e;color:white;border:none">
+    إنشاء حساب
+  </button>
 </div>
 
 <script>
 
-// ☰ open/close menu
+// ☰ menu
 function toggleMenu(){
   let m=document.getElementById("menu");
   m.style.display = (m.style.display==="flex") ? "none" : "flex";
 }
 
-// 🏠 home
-function home(){
- location.reload();
-}
+// 📌 show sections
+function show(id){
 
-// 💰 pricing
-function pricing(){
- alert("CPM: 1$ - 5$ لكل 1000 مشاهدة (حسب الدولة)");
-}
+  let sections=document.querySelectorAll(".section");
+  sections.forEach(s=>s.classList.remove("active"));
 
-// 💳 payments
-function payments(){
- alert("إثباتات الدفع سيتم إضافتها لاحقاً");
-}
+  document.getElementById(id).classList.add("active");
 
-// 🔐 login
-function login(){
- alert("صفحة تسجيل الدخول");
-}
-
-// ➕ signup
-function signup(){
- alert("صفحة إنشاء حساب");
+  document.getElementById("menu").style.display="none";
 }
 
 </script>
