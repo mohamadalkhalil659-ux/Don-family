@@ -94,20 +94,7 @@ function login(){
 }
 
 
-// 🔄 معالجة الرجوع من Google (FIXED مهم جدًا)
-firebase.auth().getRedirectResult()
-.then(function(result){
-  if(result && result.user){
-    document.getElementById("user").innerText =
-    "👤 مرحبًا: " + result.user.email;
-  }
-})
-.catch(function(error){
-  console.log("Auth error:", error);
-});
-
-
-// 👤 حالة المستخدم (الأهم)
+// 👤 الحالة الحقيقية للمستخدم (الإصلاح الأساسي)
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
