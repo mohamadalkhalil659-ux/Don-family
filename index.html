@@ -87,23 +87,27 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// 🔐 تسجيل الدخول (FIXED)
+// 🔐 تسجيل الدخول (FIXED - بدون popup)
 function login(){
   var provider = new firebase.auth.GoogleAuthProvider();
-
-  firebase.auth().signInWithPopup(provider)
-  .then((result)=>{
-    let user = result.user;
-    document.getElementById("user").innerText =
-    "👤 مرحبًا: " + user.email;
-  })
-  .catch((error)=>{
-    alert(error.message);
-  });
+  firebase.auth().signInWithRedirect(provider);
 }
 
 
-// 👤 الحالة
+// 🔄 معالجة الرجوع من Google
+firebase.auth().getRedirectResult()
+.then((result)=>{
+  if(result && result.user){
+    document.getElementById("user").innerText =
+    "👤 مرحبًا: " + result.user.email;
+  }
+})
+.catch((error)=>{
+  console.log(error.message);
+});
+
+
+// 👤 الحالة الحقيقية للمستخدم
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
