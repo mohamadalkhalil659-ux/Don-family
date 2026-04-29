@@ -45,7 +45,6 @@ button {
 }
 </style>
 
-<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -62,7 +61,6 @@ button {
 مكان إعلان (AdSense لاحقًا)
 </div>
 
-<!-- تسجيل الدخول -->
 <button onclick="login()">تسجيل الدخول Google</button>
 <p id="user"></p>
 
@@ -85,36 +83,37 @@ const firebaseConfig = {
   appId: "1:177445092040:web:fa22e602fee9fdfd4103fd"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// 🔐 تسجيل الدخول (Redirect بدل Popup)
+// 🔐 تسجيل الدخول (FIXED)
 function login(){
   var provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithRedirect(provider);
 }
 
 
-// 🔄 بعد الرجوع من Google
+// 🔄 معالجة الرجوع من Google (FIXED مهم جدًا)
 firebase.auth().getRedirectResult()
 .then(function(result){
-  if(result.user){
+  if(result && result.user){
     document.getElementById("user").innerText =
     "👤 مرحبًا: " + result.user.email;
   }
 })
 .catch(function(error){
-  console.log(error);
+  console.log("Auth error:", error);
 });
 
 
-// 👤 معرفة المستخدم تلقائيًا
+// 👤 حالة المستخدم (الأهم)
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
     "👤 مرحبًا: " + user.email;
+  } else {
+    document.getElementById("user").innerText = "";
   }
 });
 
