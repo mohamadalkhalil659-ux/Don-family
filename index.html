@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Don Paste</title>
+<title>Don Paste Pro</title>
 
 <style>
 body {
@@ -14,25 +14,25 @@ body {
 }
 
 .container {
-  max-width: 700px;
+  max-width: 800px;
   margin: auto;
   padding: 20px;
 }
 
 textarea {
   width: 100%;
-  height: 200px;
+  height: 160px;
   border-radius: 10px;
   border: none;
   padding: 10px;
 }
 
 button {
-  padding: 10px 20px;
+  padding: 10px 15px;
   background: #22c55e;
   border: none;
   color: white;
-  margin-top: 10px;
+  margin: 5px;
   cursor: pointer;
   border-radius: 8px;
 }
@@ -42,10 +42,15 @@ button {
   padding: 15px;
   margin-top: 15px;
   border-radius: 10px;
+  text-align: left;
+}
+
+.small {
+  font-size: 12px;
+  color: #aaa;
 }
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -56,17 +61,18 @@ button {
 
 <div class="container">
 
-<h1>🚀 Don Paste</h1>
+<h1>🚀 Don Paste Pro</h1>
 
-<div class="box">مكان إعلان</div>
+<div class="box">نظام متطور لإدارة النصوص</div>
 
 <button onclick="login()">تسجيل الدخول Google</button>
+<button onclick="profile()">👤 ملفي</button>
+
 <p id="user"></p>
 
-<textarea id="text" placeholder="اكتب النص هنا..."></textarea>
-<br>
+<textarea id="text" placeholder="اكتب النص هنا..."></textarea><br>
 
-<button onclick="save()">إنشاء رابط</button>
+<button onclick="save()">حفظ</button>
 <button onclick="myPastes()">📁 نصوصي</button>
 
 <div id="result"></div>
@@ -88,105 +94,121 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+let currentEditId = null;
+
 
 // 🔐 تسجيل الدخول
 function login(){
-  var provider = new firebase.auth.GoogleAuthProvider();
-
-  firebase.auth().signInWithPopup(provider)
-  .then((result)=>{
-    document.getElementById("user").innerText =
-      "👤 مرحبًا: " + result.user.email;
-  })
-  .catch((error)=>{
-    alert("خطأ تسجيل الدخول: " + error.message);
-  });
+  let provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider);
 }
 
 
-// 👤 حالة المستخدم
-firebase.auth().onAuthStateChanged((user)=>{
+// 👤 الحالة
+firebase.auth().onAuthStateChanged(user=>{
   if(user){
     document.getElementById("user").innerText =
-      "👤 مرحبًا: " + user.email;
+    "👤 " + user.email;
   } else {
     document.getElementById("user").innerText = "";
   }
 });
 
 
-// 💾 حفظ النص مع user.uid
+// 💾 حفظ / تعديل
 function save(){
  let user = firebase.auth().currentUser;
+ if(!user) return alert("سجّل دخول أولاً");
 
- if(!user){
-  alert("سجّل دخول أولاً");
-  return;
+ let text = document.getElementById("text").value;
+
+ if(currentEditId){
+
+   db.collection("pastes").doc(currentEditId).update({
+     content: text
+   });
+
+   currentEditId = null;
+   alert("تم التعديل");
+   return;
  }
-
- let t = document.getElementById("text").value;
 
  db.collection("pastes").add({
-  content: t,
-  date: new Date().toString(),
+  content: text,
   userId: user.uid,
-  userEmail: user.email
- }).then((docRef)=>{
-
-  let link = location.href + "#" + docRef.id;
-
-  document.getElementById("result").innerHTML =
-    "<div class='box'>رابطك:<br><a style='color:#22c55e' href='"+link+"'>"+link+"</a></div>";
-
+  email: user.email,
+  date: new Date().toString()
  });
+
+ alert("تم الحفظ");
 }
 
 
-// 📁 عرض نصوص المستخدم فقط
+// 📁 نصوصي فقط
 function myPastes(){
  let user = firebase.auth().currentUser;
-
- if(!user){
-  alert("سجّل دخول أولاً");
-  return;
- }
+ if(!user) return alert("سجّل دخول أولاً");
 
  db.collection("pastes")
- .where("userId", "==", user.uid)
+ .where("userId","==",user.uid)
  .get()
- .then((snapshot)=>{
+ .then(snap=>{
 
-  let html = "<div class='container'><h2>📁 نصوصي</h2>";
+   let html = "<div class='container'><h2>📁 نصوصي</h2>";
 
-  snapshot.forEach((doc)=>{
+   snap.forEach(doc=>{
+     let d = doc.data();
 
-    html += `
-      <div class="box">
-        <pre>${doc.data().content}</pre>
-      </div>
-    `;
-  });
+     html += `
+     <div class="box">
+       <pre>${d.content}</pre>
+       <button onclick="edit('${doc.id}','${d.content}')">✏ تعديل</button>
+       <button onclick="del('${doc.id}')">🗑 حذف</button>
+     </div>`;
+   });
 
-  html += "</div>";
-
-  document.body.innerHTML = html;
-
+   html += "</div>";
+   document.body.innerHTML = html;
  });
 }
 
 
-// 📄 عرض نص واحد عبر الرابط
-window.onload = function(){
- let id = location.hash.replace("#","");
+// ✏ تعديل
+function edit(id, text){
+  currentEditId = id;
+  document.getElementById("text").value = text;
+}
 
- if(id){
-  db.collection("pastes").doc(id).get().then((doc)=>{
-   if(doc.exists){
-    document.body.innerHTML =
-      "<div class='container'><pre>"+doc.data().content+"</pre></div>";
-   }
-  });
- }
+
+// 🗑 حذف
+function del(id){
+  db.collection("pastes").doc(id).delete();
+  alert("تم الحذف");
+}
+
+
+// 👤 Profile
+function profile(){
+ let user = firebase.auth().currentUser;
+ if(!user) return alert("سجّل دخول أولاً");
+
+ db.collection("pastes")
+ .where("userId","==",user.uid)
+ .get()
+ .then(snap=>{
+
+   let html = `
+   <div class="container">
+   <h2>👤 ملفي</h2>
+   <p class="small">${user.email}</p>
+   <hr>`;
+
+   html += `<p>عدد النصوص: ${snap.size}</p>`;
+
+   html += "</div>";
+
+   document.body.innerHTML = html;
+ });
 }
 
 </script>
