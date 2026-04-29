@@ -2,165 +2,232 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Global SaaS</title>
+<title>SaaS System</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0a0f1c;
-  color:white;
-}
+body{margin:0;font-family:Arial;background:#0b1220;color:white}
 
-/* NAV */
 nav{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-  background:#111827;
-  position:relative;
+ background:#111827;
+ padding:10px;
+ display:flex;
+ justify-content:space-between;
 }
 
-.logo{
-  font-weight:bold;
+.container{padding:20px}
+
+input,textarea{
+ width:100%;
+ padding:10px;
+ margin:5px 0;
+ border-radius:8px;
+ border:none;
 }
 
-.menu-btn{
-  font-size:26px;
-  cursor:pointer;
+button{
+ padding:10px;
+ margin:5px;
+ background:#22c55e;
+ border:none;
+ color:white;
+ border-radius:8px;
+ cursor:pointer;
 }
 
-.menu{
-  position:absolute;
-  top:60px;
-  right:10px;
-  background:#1e293b;
-  width:240px;
-  border-radius:10px;
-  display:none;
-  flex-direction:column;
-}
-
-.menu button{
-  padding:12px;
-  border:none;
-  background:none;
-  color:white;
-  text-align:left;
-  cursor:pointer;
-}
-
-.menu button:hover{
-  background:#334155;
-}
-
-/* SECTIONS */
-.section{
-  display:none;
-  padding:30px;
-  text-align:center;
-}
-
-.active{
-  display:block;
-}
-
-/* HERO */
-.hero{
-  padding:60px 20px;
-  text-align:center;
+.card{
+ background:#1e293b;
+ padding:15px;
+ margin:10px 0;
+ border-radius:10px;
 }
 </style>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
 </head>
 
 <body>
 
 <nav>
-  <div class="logo">🚀 Global SaaS</div>
-  <div class="menu-btn" onclick="toggleMenu()">☰</div>
-
-  <div class="menu" id="menu">
-
-    <button onclick="show('home')">🏠 بيت</button>
-    <button onclick="show('pricing')">💰 أسعار الناشر (CPM)</button>
-    <button onclick="show('payments')">💳 إثباتات الدفع</button>
-    <button onclick="show('login')">🔐 تسجيل دخول</button>
-    <button onclick="show('signup')">➕ إنشاء حساب</button>
-
-  </div>
+<div>🚀 SaaS</div>
+<div id="navUser"></div>
 </nav>
 
-<!-- 🏠 HOME -->
-<div id="home" class="section active hero">
-  <h1>أهلاً بك 👋</h1>
-  <p>منصة نشر وربح احترافية</p>
-</div>
-
-<!-- 💰 CPM -->
-<div id="pricing" class="section">
-  <h2>💰 أسعار الناشر (CPM)</h2>
-
-  <p>الدول العربية: 0.5$ - 2$ لكل 1000 مشاهدة</p>
-  <p>أوروبا: 2$ - 6$ لكل 1000 مشاهدة</p>
-  <p>أمريكا: 5$ - 12$ لكل 1000 مشاهدة</p>
-</div>
-
-<!-- 💳 PAYMENTS -->
-<div id="payments" class="section">
-  <h2>💳 إثباتات الدفع</h2>
-
-  <p>📌 سيتم عرض إثباتات الدفع قريباً</p>
-  <p>💡 PayPal / Payoneer / Crypto</p>
-</div>
-
-<!-- 🔐 LOGIN -->
-<div id="login" class="section">
-  <h2>🔐 تسجيل الدخول</h2>
-
-  <input placeholder="Email" style="padding:10px;width:80%">
-  <br><br>
-  <input type="password" placeholder="Password" style="padding:10px;width:80%">
-  <br><br>
-
-  <button style="padding:10px 20px;background:#22c55e;color:white;border:none">
-    دخول
-  </button>
-</div>
-
-<!-- ➕ SIGNUP -->
-<div id="signup" class="section">
-  <h2>➕ إنشاء حساب</h2>
-
-  <input placeholder="Email" style="padding:10px;width:80%">
-  <br><br>
-  <input type="password" placeholder="Password" style="padding:10px;width:80%">
-  <br><br>
-
-  <button style="padding:10px 20px;background:#22c55e;color:white;border:none">
-    إنشاء حساب
-  </button>
-</div>
+<div class="container" id="app"></div>
 
 <script>
 
-// ☰ menu
-function toggleMenu(){
-  let m=document.getElementById("menu");
-  m.style.display = (m.style.display==="flex") ? "none" : "flex";
+// 🔥 Firebase
+const firebaseConfig = {
+ apiKey:"AIzaSy...",
+ authDomain:"YOUR.firebaseapp.com",
+ projectId:"YOUR"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// 👑 ضع UID الادمن هنا
+const ADMIN_UID = "PUT_ADMIN_UID_HERE";
+
+// 🏠 الصفحة الرئيسية
+function home(){
+ app.innerHTML = `
+ <h2>Welcome</h2>
+
+ <button onclick="showLogin()">Login</button>
+ <button onclick="showSignup()">Signup</button>
+ `;
 }
 
-// 📌 show sections
-function show(id){
-
-  let sections=document.querySelectorAll(".section");
-  sections.forEach(s=>s.classList.remove("active"));
-
-  document.getElementById(id).classList.add("active");
-
-  document.getElementById("menu").style.display="none";
+// 🔐 تسجيل
+function showLogin(){
+ app.innerHTML = `
+ <h2>Login</h2>
+ <input id="email">
+ <input id="pass" type="password">
+ <button onclick="login()">Login</button>
+ <button onclick="google()">Google</button>
+ `;
 }
+
+// ➕ إنشاء حساب
+function showSignup(){
+ app.innerHTML = `
+ <h2>Signup</h2>
+ <input id="email">
+ <input id="pass" type="password">
+ <input id="repass" type="password">
+ <button onclick="signup()">Create</button>
+ `;
+}
+
+// 🔐 Email login
+function login(){
+ firebase.auth().signInWithEmailAndPassword(
+ email.value, pass.value
+ );
+}
+
+// ➕ Email signup
+function signup(){
+
+ if(pass.value !== repass.value){
+  return alert("Passwords not match");
+ }
+
+ firebase.auth().createUserWithEmailAndPassword(
+ email.value, pass.value
+ );
+}
+
+// 🌐 Google
+function google(){
+ let p = new firebase.auth.GoogleAuthProvider();
+ firebase.auth().signInWithPopup(p);
+}
+
+// 👤 الحالة
+firebase.auth().onAuthStateChanged(user=>{
+ if(user){
+  navUser.innerHTML = user.email;
+
+  if(user.uid === ADMIN_UID){
+    adminPanel();
+  }else{
+    userDashboard();
+  }
+
+ }else{
+  home();
+ }
+});
+
+// 👤 لوحة المستخدم
+function userDashboard(){
+ app.innerHTML = `
+ <h2>User Dashboard</h2>
+
+ <textarea id="text"></textarea>
+ <button onclick="save()">Save</button>
+
+ <div id="data"></div>
+ `;
+
+ loadUserData();
+}
+
+// 💾 حفظ
+function save(){
+ let user = firebase.auth().currentUser;
+
+ db.collection("posts").add({
+  text:text.value,
+  uid:user.uid,
+  views:0,
+  earnings:0
+ });
+
+ alert("Saved");
+}
+
+// 📊 تحميل بيانات المستخدم
+function loadUserData(){
+ let user = firebase.auth().currentUser;
+
+ db.collection("posts")
+ .where("uid","==",user.uid)
+ .onSnapshot(snap=>{
+
+  let html="";
+
+  snap.forEach(doc=>{
+   let d = doc.data();
+
+   html += `
+   <div class="card">
+    ${d.text}
+    <br>👁 ${d.views}
+    <br>💰 $${d.earnings}
+   </div>
+   `;
+  });
+
+  data.innerHTML = html;
+ });
+}
+
+// 👑 لوحة الادمن
+function adminPanel(){
+ app.innerHTML = `
+ <h2>Admin Panel</h2>
+ <div id="all"></div>
+ `;
+
+ db.collection("posts").onSnapshot(snap=>{
+
+  let html="";
+
+  snap.forEach(doc=>{
+   let d = doc.data();
+
+   html += `
+   <div class="card">
+    ${d.text}
+    <br>👤 ${d.uid}
+    <br>👁 ${d.views}
+   </div>
+   `;
+  });
+
+  all.innerHTML = html;
+ });
+}
+
+// 🚀 start
+home();
 
 </script>
 
