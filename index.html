@@ -87,7 +87,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 
-// 🔐 تسجيل الدخول (الأكثر استقرارًا)
+// 🔐 تسجيل الدخول
 function login(){
   var provider = new firebase.auth.GoogleAuthProvider();
 
@@ -102,7 +102,7 @@ function login(){
 }
 
 
-// 👤 حالة المستخدم (أساسي جدًا)
+// 👤 حالة المستخدم
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
@@ -113,13 +113,22 @@ firebase.auth().onAuthStateChanged((user)=>{
 });
 
 
-// 💾 حفظ النص
+// 💾 حفظ النص (مع user.uid)
 function save(){
+ let user = firebase.auth().currentUser;
+
+ if(!user){
+  alert("سجّل دخول أولاً");
+  return;
+ }
+
  let t = document.getElementById("text").value;
 
  db.collection("pastes").add({
   content: t,
-  date: new Date().toString()
+  date: new Date().toString(),
+  userId: user.uid,
+  userEmail: user.email
  }).then((docRef)=>{
 
   let link = location.href + "#" + docRef.id;
