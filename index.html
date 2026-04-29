@@ -2,54 +2,54 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Don Paste Pro+</title>
+<title>Don Paste V4</title>
 
 <style>
-body {
-  font-family: Arial;
-  background: #0b1220;
-  color: white;
-  margin: 0;
-  text-align: center;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
+  color:white;
+  text-align:center;
 }
 
-.container {
-  max-width: 900px;
-  margin: auto;
-  padding: 20px;
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
 }
 
-textarea {
-  width: 100%;
-  height: 140px;
-  border-radius: 10px;
-  border: none;
-  padding: 10px;
+textarea{
+  width:100%;
+  height:140px;
+  border-radius:10px;
+  border:none;
+  padding:10px;
 }
 
-button {
-  padding: 10px 14px;
-  background: #22c55e;
-  border: none;
-  color: white;
-  margin: 5px;
-  cursor: pointer;
-  border-radius: 8px;
+button{
+  padding:10px 14px;
+  margin:5px;
+  background:#22c55e;
+  border:none;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
 }
 
-.box {
-  background: #1e293b;
-  padding: 15px;
-  margin-top: 15px;
-  border-radius: 10px;
-  text-align: left;
+.box{
+  background:#1e293b;
+  padding:15px;
+  margin-top:15px;
+  border-radius:10px;
+  text-align:left;
 }
 
-.topbar {
-  background: #0f172a;
-  padding: 10px;
-  margin-bottom: 20px;
+.top{
+  background:#0f172a;
+  padding:10px;
 }
+a{color:#22c55e}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -60,20 +60,20 @@ button {
 
 <body>
 
-<div class="topbar">
-<h2>🚀 Don Paste Pro+</h2>
-<button onclick="login()">Google Login</button>
-<button onclick="home()">🏠 Home</button>
-<button onclick="profile()">👤 Profile</button>
+<div class="top">
+<h2>🚀 Don Paste V4</h2>
+<button onclick="login()">Login</button>
+<button onclick="home()">Home</button>
+<button onclick="profile()">Profile</button>
 <p id="user"></p>
 </div>
 
 <div class="container">
 
-<textarea id="text" placeholder="اكتب نصك هنا..."></textarea><br>
+<textarea id="text"></textarea><br>
 
-<button onclick="save()">💾 حفظ</button>
-<button onclick="myPastes()">📁 نصوصي</button>
+<button onclick="save()">Save</button>
+<button onclick="myPastes()">My Pastes</button>
 
 <div id="result"></div>
 
@@ -83,12 +83,12 @@ button {
 
 // 🔥 Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
-  authDomain: "don-paste-189e9.firebaseapp.com",
-  projectId: "don-paste-189e9",
-  storageBucket: "don-paste-189e9.appspot.com",
-  messagingSenderId: "177445092040",
-  appId: "1:177445092040:web:fa22e602fee9fdfd4103fd"
+ apiKey: "AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
+ authDomain: "don-paste-189e9.firebaseapp.com",
+ projectId: "don-paste-189e9",
+ storageBucket: "don-paste-189e9.appspot.com",
+ messagingSenderId: "177445092040",
+ appId: "1:177445092040:web:fa22e602fee9fdfd4103fd"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -104,118 +104,103 @@ function login(){
 }
 
 
-// 👤 user state
-firebase.auth().onAuthStateChanged(user=>{
- if(user){
-  document.getElementById("user").innerText = "👤 " + user.email;
+// 👤 user
+firebase.auth().onAuthStateChanged(u=>{
+ if(u){
+  document.getElementById("user").innerText = u.email;
  }
 });
 
 
-// 💾 save + short link + views
+// 🧠 slug generator
+function slug(){
+ return Math.random().toString(36).substring(2,8);
+}
+
+
+// 💾 save
 function save(){
- let user = firebase.auth().currentUser;
- if(!user) return alert("سجّل دخول أولاً");
+ let u = firebase.auth().currentUser;
+ if(!u) return alert("Login first");
 
  let text = document.getElementById("text").value;
+ let id = slug();
 
- if(editId){
-   db.collection("pastes").doc(editId).update({
-     content: text
-   });
-   editId = null;
-   alert("تم التعديل");
-   return;
- }
-
- db.collection("pastes").add({
-  content: text,
-  userId: user.uid,
-  email: user.email,
-  views: 0,
-  created: Date.now()
- }).then(doc=>{
-  let link = location.href + "#p=" + doc.id;
-
-  document.getElementById("result").innerHTML =
-  `<div class="box">
-    🔗 رابطك:<br>
-    <a href="${link}" style="color:#22c55e">${link}</a>
-  </div>`;
+ db.collection("pastes").doc(id).set({
+  content:text,
+  userId:u.uid,
+  email:u.email,
+  views:0,
+  slug:id,
+  created:Date.now()
  });
+
+ let link = location.origin + location.pathname + "?p=" + id;
+
+ document.getElementById("result").innerHTML =
+ `<div class="box">
+ 🔗 Link:<br>
+ <a href="${link}">${link}</a>
+ </div>`;
 }
 
 
 // 📁 my pastes
 function myPastes(){
- let user = firebase.auth().currentUser;
- if(!user) return;
+ let u = firebase.auth().currentUser;
+ if(!u) return;
 
  db.collection("pastes")
- .where("userId","==",user.uid)
+ .where("userId","==",u.uid)
  .get()
  .then(snap=>{
 
-  let html = "<div class='container'><h2>📁 نصوصي</h2>";
+ let html="<div class='container'><h2>My Pastes</h2>";
 
-  snap.forEach(doc=>{
-    let d = doc.data();
+ snap.forEach(d=>{
+  let x=d.data();
 
-    html += `
-    <div class="box">
-      <pre>${d.content}</pre>
-      <small>👁 ${d.views || 0} views</small><br>
+  html+=`
+  <div class="box">
+   <pre>${x.content}</pre>
+   👁 ${x.views}
+  </div>`;
+ });
 
-      <button onclick="edit('${doc.id}','${d.content}')">✏ تعديل</button>
-      <button onclick="del('${doc.id}')">🗑 حذف</button>
-    </div>`;
-  });
-
-  document.body.innerHTML = html + "</div>";
+ document.body.innerHTML=html+"</div>";
  });
 }
 
 
-// ✏ edit
-function edit(id, text){
- editId = id;
- document.getElementById("text").value = text;
-}
-
-
-// 🗑 delete
-function del(id){
- db.collection("pastes").doc(id).delete();
- alert("تم الحذف");
-}
-
-
-// 👤 profile (earn system)
+// 👤 profile + earnings
 function profile(){
- let user = firebase.auth().currentUser;
- if(!user) return;
+ let u=firebase.auth().currentUser;
+ if(!u) return;
 
  db.collection("pastes")
- .where("userId","==",user.uid)
+ .where("userId","==",u.uid)
  .get()
  .then(snap=>{
 
-  let views = 0;
+ let views=0;
 
-  snap.forEach(d=>{
-   views += (d.data().views || 0);
-  });
+ snap.forEach(d=>{
+  views+=d.data().views||0;
+ });
 
-  document.body.innerHTML = `
-  <div class="container">
-    <h2>👤 Profile</h2>
-    <p>${user.email}</p>
-    <div class="box">
-      📊 عدد النصوص: ${snap.size}<br>
-      👁 إجمالي المشاهدات: ${views}<br>
-      💰 الأرباح: ${(views * 0.001).toFixed(2)} $
-    </div>
-  </div>`;
+ let money=(views*0.001).toFixed(2);
+
+ document.body.innerHTML=`
+ <div class="container">
+  <h2>👤 Profile</h2>
+  <p>${u.email}</p>
+
+  <div class="box">
+   📊 Posts: ${snap.size}<br>
+   👁 Views: ${views}<br>
+   💰 Earnings: $${money}
+  </div>
+ </div>`;
  });
 }
 
@@ -226,22 +211,25 @@ function home(){
 }
 
 
-// 🔗 open paste + views counter
-window.onload = function(){
- let id = location.hash.replace("#p=","");
+// 🔗 open paste system
+window.onload=function(){
 
- if(id){
-  let ref = db.collection("pastes").doc(id);
+ let p=new URLSearchParams(location.search).get("p");
+
+ if(p){
+  let ref=db.collection("pastes").doc(p);
 
   ref.get().then(doc=>{
+
    if(doc.exists){
+
     ref.update({
-      views: (doc.data().views || 0) + 1
+     views:(doc.data().views||0)+1
     });
 
-    document.body.innerHTML =
-    `<div class="container">
-      <pre>${doc.data().content}</pre>
+    document.body.innerHTML=`
+    <div class="container">
+     <pre>${doc.data().content}</pre>
     </div>`;
    }
   });
