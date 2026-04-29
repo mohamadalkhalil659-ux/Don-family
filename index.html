@@ -2,33 +2,33 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Don Paste Pro</title>
+<title>Don Paste Pro+</title>
 
 <style>
 body {
   font-family: Arial;
-  background: #0f172a;
+  background: #0b1220;
   color: white;
-  text-align: center;
   margin: 0;
+  text-align: center;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: auto;
   padding: 20px;
 }
 
 textarea {
   width: 100%;
-  height: 160px;
+  height: 140px;
   border-radius: 10px;
   border: none;
   padding: 10px;
 }
 
 button {
-  padding: 10px 15px;
+  padding: 10px 14px;
   background: #22c55e;
   border: none;
   color: white;
@@ -45,9 +45,10 @@ button {
   text-align: left;
 }
 
-.small {
-  font-size: 12px;
-  color: #aaa;
+.topbar {
+  background: #0f172a;
+  padding: 10px;
+  margin-bottom: 20px;
 }
 </style>
 
@@ -59,20 +60,19 @@ button {
 
 <body>
 
+<div class="topbar">
+<h2>🚀 Don Paste Pro+</h2>
+<button onclick="login()">Google Login</button>
+<button onclick="home()">🏠 Home</button>
+<button onclick="profile()">👤 Profile</button>
+<p id="user"></p>
+</div>
+
 <div class="container">
 
-<h1>🚀 Don Paste Pro</h1>
+<textarea id="text" placeholder="اكتب نصك هنا..."></textarea><br>
 
-<div class="box">نظام متطور لإدارة النصوص</div>
-
-<button onclick="login()">تسجيل الدخول Google</button>
-<button onclick="profile()">👤 ملفي</button>
-
-<p id="user"></p>
-
-<textarea id="text" placeholder="اكتب النص هنا..."></textarea><br>
-
-<button onclick="save()">حفظ</button>
+<button onclick="save()">💾 حفظ</button>
 <button onclick="myPastes()">📁 نصوصي</button>
 
 <div id="result"></div>
@@ -81,7 +81,7 @@ button {
 
 <script>
 
-// 🔥 Firebase Config
+// 🔥 Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBvSyb2TjQQs11X2_5306UbCwPcbj5fHNc",
   authDomain: "don-paste-189e9.firebaseapp.com",
@@ -94,41 +94,36 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let currentEditId = null;
+let editId = null;
 
 
-// 🔐 تسجيل الدخول
+// 🔐 login
 function login(){
-  let provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider);
+ let provider = new firebase.auth.GoogleAuthProvider();
+ firebase.auth().signInWithPopup(provider);
 }
 
 
-// 👤 الحالة
+// 👤 user state
 firebase.auth().onAuthStateChanged(user=>{
-  if(user){
-    document.getElementById("user").innerText =
-    "👤 " + user.email;
-  } else {
-    document.getElementById("user").innerText = "";
-  }
+ if(user){
+  document.getElementById("user").innerText = "👤 " + user.email;
+ }
 });
 
 
-// 💾 حفظ / تعديل
+// 💾 save + short link + views
 function save(){
  let user = firebase.auth().currentUser;
  if(!user) return alert("سجّل دخول أولاً");
 
  let text = document.getElementById("text").value;
 
- if(currentEditId){
-
-   db.collection("pastes").doc(currentEditId).update({
+ if(editId){
+   db.collection("pastes").doc(editId).update({
      content: text
    });
-
-   currentEditId = null;
+   editId = null;
    alert("تم التعديل");
    return;
  }
@@ -137,78 +132,120 @@ function save(){
   content: text,
   userId: user.uid,
   email: user.email,
-  date: new Date().toString()
- });
+  views: 0,
+  created: Date.now()
+ }).then(doc=>{
+  let link = location.href + "#p=" + doc.id;
 
- alert("تم الحفظ");
+  document.getElementById("result").innerHTML =
+  `<div class="box">
+    🔗 رابطك:<br>
+    <a href="${link}" style="color:#22c55e">${link}</a>
+  </div>`;
+ });
 }
 
 
-// 📁 نصوصي فقط
+// 📁 my pastes
 function myPastes(){
  let user = firebase.auth().currentUser;
- if(!user) return alert("سجّل دخول أولاً");
+ if(!user) return;
 
  db.collection("pastes")
  .where("userId","==",user.uid)
  .get()
  .then(snap=>{
 
-   let html = "<div class='container'><h2>📁 نصوصي</h2>";
+  let html = "<div class='container'><h2>📁 نصوصي</h2>";
 
-   snap.forEach(doc=>{
-     let d = doc.data();
+  snap.forEach(doc=>{
+    let d = doc.data();
 
-     html += `
-     <div class="box">
-       <pre>${d.content}</pre>
-       <button onclick="edit('${doc.id}','${d.content}')">✏ تعديل</button>
-       <button onclick="del('${doc.id}')">🗑 حذف</button>
-     </div>`;
-   });
+    html += `
+    <div class="box">
+      <pre>${d.content}</pre>
+      <small>👁 ${d.views || 0} views</small><br>
 
-   html += "</div>";
-   document.body.innerHTML = html;
+      <button onclick="edit('${doc.id}','${d.content}')">✏ تعديل</button>
+      <button onclick="del('${doc.id}')">🗑 حذف</button>
+    </div>`;
+  });
+
+  document.body.innerHTML = html + "</div>";
  });
 }
 
 
-// ✏ تعديل
+// ✏ edit
 function edit(id, text){
-  currentEditId = id;
-  document.getElementById("text").value = text;
+ editId = id;
+ document.getElementById("text").value = text;
 }
 
 
-// 🗑 حذف
+// 🗑 delete
 function del(id){
-  db.collection("pastes").doc(id).delete();
-  alert("تم الحذف");
+ db.collection("pastes").doc(id).delete();
+ alert("تم الحذف");
 }
 
 
-// 👤 Profile
+// 👤 profile (earn system)
 function profile(){
  let user = firebase.auth().currentUser;
- if(!user) return alert("سجّل دخول أولاً");
+ if(!user) return;
 
  db.collection("pastes")
  .where("userId","==",user.uid)
  .get()
  .then(snap=>{
 
-   let html = `
-   <div class="container">
-   <h2>👤 ملفي</h2>
-   <p class="small">${user.email}</p>
-   <hr>`;
+  let views = 0;
 
-   html += `<p>عدد النصوص: ${snap.size}</p>`;
+  snap.forEach(d=>{
+   views += (d.data().views || 0);
+  });
 
-   html += "</div>";
-
-   document.body.innerHTML = html;
+  document.body.innerHTML = `
+  <div class="container">
+    <h2>👤 Profile</h2>
+    <p>${user.email}</p>
+    <div class="box">
+      📊 عدد النصوص: ${snap.size}<br>
+      👁 إجمالي المشاهدات: ${views}<br>
+      💰 الأرباح: ${(views * 0.001).toFixed(2)} $
+    </div>
+  </div>`;
  });
+}
+
+
+// 🏠 home
+function home(){
+ location.reload();
+}
+
+
+// 🔗 open paste + views counter
+window.onload = function(){
+ let id = location.hash.replace("#p=","");
+
+ if(id){
+  let ref = db.collection("pastes").doc(id);
+
+  ref.get().then(doc=>{
+   if(doc.exists){
+    ref.update({
+      views: (doc.data().views || 0) + 1
+    });
+
+    document.body.innerHTML =
+    `<div class="container">
+      <pre>${doc.data().content}</pre>
+    </div>`;
+   }
+  });
+ }
 }
 
 </script>
