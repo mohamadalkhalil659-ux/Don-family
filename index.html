@@ -1,235 +1,66 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>SaaS System</title>
-
-<style>
-body{margin:0;font-family:Arial;background:#0b1220;color:white}
-
-nav{
- background:#111827;
- padding:10px;
- display:flex;
- justify-content:space-between;
-}
-
-.container{padding:20px}
-
-input,textarea{
- width:100%;
- padding:10px;
- margin:5px 0;
- border-radius:8px;
- border:none;
-}
-
-button{
- padding:10px;
- margin:5px;
- background:#22c55e;
- border:none;
- color:white;
- border-radius:8px;
- cursor:pointer;
-}
-
-.card{
- background:#1e293b;
- padding:15px;
- margin:10px 0;
- border-radius:10px;
-}
-</style>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+  <meta charset="UTF-8">
+  <title>Don Family</title>
+  <style>
+    body { font-family: Arial; margin:0; background:#f5f5f5; }
+    header { background:#222; color:#fff; padding:15px; text-align:center; position:relative; }
+    .menu { position:absolute; right:15px; top:15px; cursor:pointer; }
+    .menu-content { display:none; position:absolute; right:15px; top:50px; background:#fff; color:#000; border:1px solid #ccc; }
+    .menu-content button { display:block; width:150px; padding:10px; border:none; background:#eee; cursor:pointer; }
+    .container { padding:20px; text-align:center; }
+    input, textarea { width:80%; padding:10px; margin:10px 0; }
+    button.main { padding:10px 20px; }
+    .card { background:#fff; padding:20px; margin:10px auto; width:80%; border-radius:10px; }
+  </style>
 </head>
-
-<body>
-
-<nav>
-<div>🚀 SaaS</div>
-<div id="navUser"></div>
-</nav>
-
-<div class="container" id="app"></div>
-
-<script>
-
-// 🔥 Firebase
-const firebaseConfig = {
- apiKey:"AIzaSy...",
- authDomain:"YOUR.firebaseapp.com",
- projectId:"YOUR"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// 👑 ضع UID الادمن هنا
-const ADMIN_UID = "PUT_ADMIN_UID_HERE";
-
-// 🏠 الصفحة الرئيسية
-function home(){
- app.innerHTML = `
- <h2>Welcome</h2>
-
- <button onclick="showLogin()">Login</button>
- <button onclick="showSignup()">Signup</button>
- `;
+<body><header>
+  <div class="menu" onclick="toggleMenu()">☰</div>
+  <h1>Don Family</h1>
+  <div class="menu-content" id="menu">
+    <button>أسعار النشر</button>
+    <button>إثباتات الدفع</button>
+    <button onclick="showWithdraw()">طلب سحب</button>
+  </div>
+</header><div class="container" id="userPage">
+  <div class="card">
+    <h3>اختصار رابط أو كتابة نص</h3>
+    <textarea id="content" placeholder="اكتب الرابط أو النص هنا"></textarea><br>
+    <button class="main" onclick="createLink()">إنشاء</button>
+  </div>
+</div><div class="container" id="resultPage" style="display:none;">
+  <div class="card">
+    <h3>الرابط المختصر / النص</h3>
+    <p id="result"></p>
+    <h4>إعلانات</h4>
+    <p id="ads">(سيتم وضع الإعلانات من الأدمن)</p>
+    <p>عدد الزوار: 0</p>
+    <p>كمية الربح: 0$</p>
+  </div>
+</div><div class="container" id="adminPage" style="display:none;">
+  <div class="card">
+    <h3>طلبات السحب</h3>
+    <p>(بيانات طلبات السحب تظهر هنا)</p>
+  </div>
+  <div class="card">
+    <h3>إدارة الإعلانات</h3>
+    <textarea placeholder="أدخل الإعلان هنا"></textarea>
+  </div>
+</div><script>
+function toggleMenu() {
+  var menu = document.getElementById("menu");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
 
-// 🔐 تسجيل
-function showLogin(){
- app.innerHTML = `
- <h2>Login</h2>
- <input id="email">
- <input id="pass" type="password">
- <button onclick="login()">Login</button>
- <button onclick="google()">Google</button>
- `;
+function createLink() {
+  var content = document.getElementById("content").value;
+  document.getElementById("result").innerText = content;
+  document.getElementById("userPage").style.display = "none";
+  document.getElementById("resultPage").style.display = "block";
 }
 
-// ➕ إنشاء حساب
-function showSignup(){
- app.innerHTML = `
- <h2>Signup</h2>
- <input id="email">
- <input id="pass" type="password">
- <input id="repass" type="password">
- <button onclick="signup()">Create</button>
- `;
+function showWithdraw() {
+  alert("صفحة السحب (قيد التطوير)");
 }
-
-// 🔐 Email login
-function login(){
- firebase.auth().signInWithEmailAndPassword(
- email.value, pass.value
- );
-}
-
-// ➕ Email signup
-function signup(){
-
- if(pass.value !== repass.value){
-  return alert("Passwords not match");
- }
-
- firebase.auth().createUserWithEmailAndPassword(
- email.value, pass.value
- );
-}
-
-// 🌐 Google
-function google(){
- let p = new firebase.auth.GoogleAuthProvider();
- firebase.auth().signInWithPopup(p);
-}
-
-// 👤 الحالة
-firebase.auth().onAuthStateChanged(user=>{
- if(user){
-  navUser.innerHTML = user.email;
-
-  if(user.uid === ADMIN_UID){
-    adminPanel();
-  }else{
-    userDashboard();
-  }
-
- }else{
-  home();
- }
-});
-
-// 👤 لوحة المستخدم
-function userDashboard(){
- app.innerHTML = `
- <h2>User Dashboard</h2>
-
- <textarea id="text"></textarea>
- <button onclick="save()">Save</button>
-
- <div id="data"></div>
- `;
-
- loadUserData();
-}
-
-// 💾 حفظ
-function save(){
- let user = firebase.auth().currentUser;
-
- db.collection("posts").add({
-  text:text.value,
-  uid:user.uid,
-  views:0,
-  earnings:0
- });
-
- alert("Saved");
-}
-
-// 📊 تحميل بيانات المستخدم
-function loadUserData(){
- let user = firebase.auth().currentUser;
-
- db.collection("posts")
- .where("uid","==",user.uid)
- .onSnapshot(snap=>{
-
-  let html="";
-
-  snap.forEach(doc=>{
-   let d = doc.data();
-
-   html += `
-   <div class="card">
-    ${d.text}
-    <br>👁 ${d.views}
-    <br>💰 $${d.earnings}
-   </div>
-   `;
-  });
-
-  data.innerHTML = html;
- });
-}
-
-// 👑 لوحة الادمن
-function adminPanel(){
- app.innerHTML = `
- <h2>Admin Panel</h2>
- <div id="all"></div>
- `;
-
- db.collection("posts").onSnapshot(snap=>{
-
-  let html="";
-
-  snap.forEach(doc=>{
-   let d = doc.data();
-
-   html += `
-   <div class="card">
-    ${d.text}
-    <br>👤 ${d.uid}
-    <br>👁 ${d.views}
-   </div>
-   `;
-  });
-
-  all.innerHTML = html;
- });
-}
-
-// 🚀 start
-home();
-
-</script>
-
-</body>
+</script></body>
 </html>
