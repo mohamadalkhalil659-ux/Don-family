@@ -90,11 +90,20 @@ const db = firebase.firestore();
 // 🔐 تسجيل الدخول (FIXED)
 function login(){
   var provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithRedirect(provider);
+
+  firebase.auth().signInWithPopup(provider)
+  .then((result)=>{
+    let user = result.user;
+    document.getElementById("user").innerText =
+    "👤 مرحبًا: " + user.email;
+  })
+  .catch((error)=>{
+    alert(error.message);
+  });
 }
 
 
-// 👤 الحالة الحقيقية للمستخدم (الإصلاح الأساسي)
+// 👤 الحالة
 firebase.auth().onAuthStateChanged((user)=>{
   if(user){
     document.getElementById("user").innerText =
